@@ -4,15 +4,18 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 
 import nablarch.common.encryption.AesEncryptor.AesContext;
+import nablarch.core.util.Base64Util;
 
 import org.junit.Test;
 
@@ -55,6 +58,69 @@ public class AesEncryptorTest {
         encrypted = encryptor.encrypt(context, src);
         decrypted = encryptor.decrypt(context, encrypted);
         assertThat(decrypted, is(src));
+    }
+
+    @Test
+    public void testEncryptAndDecryptWithSpecifyBase64Key() throws Exception {
+        final AesEncryptor sut = new AesEncryptor();
+        final byte[] key = KeyGenerator.getInstance("AES")
+                                       .generateKey()
+                                       .getEncoded();
+
+        final Base64Key base64Key = new Base64Key();
+        base64Key.setKey(Base64Util.encode(key));
+        sut.setBase64Key(base64Key);
+        final AesContext context = sut.generateContext();
+
+        assertThat("base64エンコードされた鍵が利用されること", context.getKey()
+                                                     .getEncoded(), is(key));
+
+        final String src = "あいうえお!!!!";
+        final byte[] encrypted = sut.encrypt(context, src.getBytes("utf-8"));
+        final byte[] decrypted = sut.decrypt(context, encrypted);
+
+        assertThat(new String(decrypted, "utf-8"), is(src));
+    }
+
+    @Test
+    public void testEncryptAndDecryptWithSpecifyBase64Iv() throws Exception {
+        final AesEncryptor sut = new AesEncryptor();
+
+        final byte[] iv = generateIv();
+        final Base64Key base64Key = new Base64Key();
+        base64Key.setIv(Base64Util.encode(iv));
+        sut.setBase64Key(base64Key);
+        final AesContext context = sut.generateContext();
+
+        assertThat("base64エンコードされたIVが利用されること", context.getIv(), is(iv));
+
+        final String src = "あいうえお!!!!";
+        final byte[] encrypted = sut.encrypt(context, src.getBytes("utf-8"));
+        final byte[] decrypted = sut.decrypt(context, encrypted);
+        assertThat(new String(decrypted, "utf-8"), is(src));
+    }
+
+    @Test
+    public void testEncryptAndDecryptWithSpecifyBase64KeyAndIv() throws Exception {
+        final AesEncryptor sut = new AesEncryptor();
+        final KeyGenerator aes = KeyGenerator.getInstance("AES");
+        final byte[] key = aes.generateKey()
+                              .getEncoded();
+        final byte[] iv = generateIv();
+
+        final Base64Key base64Key = new Base64Key();
+        base64Key.setKey(Base64Util.encode(key));
+        base64Key.setIv(Base64Util.encode(iv));
+        sut.setBase64Key(base64Key);
+        final AesContext context = sut.generateContext();
+
+        assertThat("base64エンコードされたkeyが利用されること", context.getKey().getEncoded(), is(key));
+        assertThat("base64エンコードされたIVが利用されること", context.getIv(), is(iv));
+
+        final String src = "あいうえお!!!!";
+        final byte[] encrypted = sut.encrypt(context, src.getBytes("utf-8"));
+        final byte[] decrypted = sut.decrypt(context, encrypted);
+        assertThat(new String(decrypted, "utf-8"), is(src));
     }
 
     @Test
@@ -168,5 +234,12 @@ public class AesEncryptorTest {
                         .getClass()
                         .getName(), is(BadPaddingException.class.getName()));
         }
+    }
+
+    private byte[] generateIv() {
+        final SecureRandom random = new SecureRandom();
+        final byte[] iv = new byte[16];
+        random.nextBytes(iv);
+        return iv;
     }
 }
