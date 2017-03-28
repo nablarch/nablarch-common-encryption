@@ -24,6 +24,11 @@ apply from: 'https://github.com/nablarch/nablarch-gradle-plugin/blob/develop/scr
 sourceCompatibility=JavaVersion.VERSION_1_6
 targetCompatibility=JavaVersion.VERSION_1_6
 
+configurations {
+  all*.exclude module: 'nablarch-test-support'
+  all*.exclude module: 'h2'
+}
+
 dependencies {
   compile "com.nablarch.framework:nablarch-fw:${nablarchFwVersion}"
   
