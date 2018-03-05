@@ -64,7 +64,7 @@ public class AesEncryptor implements Encryptor<AesEncryptor.AesContext> {
     /**
      * 暗号化に使用する共通鍵(128bit)を設定する。
      * @param key 暗号化に使用する共通鍵(128bit)
-     * @deprecated {@link #setBase64Key(Base64Key)}の使用を推奨する。
+     * @deprecated 本メソッドは共通鍵に文字列しか指定できないため、使用できる値に制限があり脆弱である。このため{@link #setBase64Key(Base64Key)}を使用すること。
      */
     @Deprecated
     public void setKey(String key) {
@@ -83,7 +83,7 @@ public class AesEncryptor implements Encryptor<AesEncryptor.AesContext> {
     /**
      * 暗号化に使用するIV(イニシャルバリュー)(128bit)を設定する。
      * @param iv 暗号化に使用するIV(イニシャルバリュー)(128bit)
-     * @deprecated {@link #setBase64Key(Base64Key)}の使用を推奨する。
+     * @deprecated 本メソッドはIVに文字列しか指定できないため、使用できる値に制限があり脆弱である。このため{@link #setBase64Key(Base64Key)}を使用すること。
      */
     @Deprecated
     public void setIv(String iv) {
